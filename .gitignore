@@ -1,0 +1,3 @@
+node_modules
+cypress/fixtures/data.json
+cypress/screenshots
