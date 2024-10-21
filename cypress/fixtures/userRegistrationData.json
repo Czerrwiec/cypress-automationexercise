@@ -1,0 +1,12 @@
+{
+    "firstName" : "Tomasz",
+    "lastName" : "Czerwiec",
+    "company" : "Some company",
+    "address" : "Some address 22",
+    "address2" : "Some address 33",
+    "state" : "Some state",
+    "city" : "Some city",
+    "zipcode" : "62-100",
+    "mobileNumber" : "999000999",
+    "username": "czerwiec"
+}
