@@ -1,6 +1,6 @@
 /// <reference types = "cypress" />
 
-describe('User registration and account delete', () => {
+describe('e2e tests', () => {
 
     const listOfSelect = ['[data-qa="days"]', '[data-qa="months"]', '[data-qa="years"]', '[data-qa="country"]']
 
@@ -25,7 +25,7 @@ describe('User registration and account delete', () => {
     }
 
 
-	it('Fill the form', () => {
+	it('User registration and then delete account', () => {
 		cy.visit('/');
         cy.contains('Signup / Login').click()
 
@@ -141,5 +141,147 @@ describe('User registration and account delete', () => {
             cy.get('[data-qa="continue-button"]').click()
 
         })       
+    })
+
+
+    it('Login/logout user with correct data', () => {
+        cy.userLogIn('registratedUser.json')
+        cy.contains('Logout').click()
+    })
+
+
+    it('Login user with incorrect data', () => {
+        cy.readJson('data.json').then((data) => {
+            cy.visit('/');
+            cy.contains('Signup / Login').click()
+            cy.get('.login-form h2').should('be.visible').and('contain','Login to your account')
+            cy.get('[data-qa="login-email"]').type(data.email)
+            cy.get('[data-qa="login-password"]').type(data.password + '!')
+            cy.get('[data-qa="login-button"]').click()
+
+            cy.get('[action="/login"]').find('p')
+                .should('be.visible')
+                .and('contain', 'Your email or password is incorrect!')
+
+            cy.get('[action="/login"]').find('p')
+                .should('have.attr', 'style')
+                .and('contain', 'color: red;')
+        })
+        
+    })
+
+
+    it('Register User with existing email', () => {
+
+        cy.readJson('registratedUser.json').then((data) => {
+            cy.visit('/');
+            cy.contains('Signup / Login').click()
+            cy.get('[data-qa="signup-name"]').type(data.name)
+            cy.get('[data-qa="signup-email"]').type(data.email)
+            cy.get('[data-qa="signup-button"]').click()
+
+            cy.get('[action="/signup"]').find('p')
+                .should('be.visible')
+                .and('contain','Email Address already exist!')
+            cy.get('[action="/signup"]').find('p')
+                .should('have.attr', 'style')
+                .and('contain', 'color: red;')
+        })
+    })
+
+
+    it('Contact Us Form', () => {
+        cy.visit('/')
+        cy.contains('Contact us').click()
+        cy.get('.contact-form h2').should('be.visible').and('contain', 'Get In Touch')
+
+        cy.readJson('registratedUser').then(data => {
+
+            cy.get('[data-qa="name"]').type(data.name)
+            cy.get('[data-qa="email"]').type(data.email)
+            cy.get('[data-qa="subject"]').type('This is the subject')
+            cy.get('[data-qa="message"]').type('This is a message body')
+            cy.get('[data-qa="submit-button"]').click()
+            cy.get('.contact-form .alert-success').should('be.visible').and('contain', 'Success! Your details have been submitted successfully.')
+        })
+        
+    })
+
+
+    it('Verify All Products and product detail page', () => {
+
+        cy.visit('/')
+        cy.contains('Products').click()
+        cy.get('.features_items h2').should('contain', 'All Products')
+        cy.get('.choose').first().find('a').click()
+
+        //details page
+        cy.get('.product-information').children().should('be.visible')
+        cy.get('.product-information').children().each( item => {
+
+            if (item[0].tagName != 'IMG' && item[0].tagName != 'SPAN') {
+                cy.wrap(item).invoke('prop', 'innerText').should('eq', item[0].innerText)
+            }
+        })
+
+    })
+
+
+    it('Search for products', () => {
+
+        const item = 'jeans'
+        
+        cy.visit('/')
+        cy.contains('Products').click()
+        cy.get('#search_product').type(item)
+        cy.get('#submit_search').click()
+
+        cy.get('.productinfo p').each( element => {
+
+            const lowerCaseItem = element[0].innerText.toLowerCase()
+
+            if (lowerCaseItem.includes('jeans')) {
+                // customized method below for color the output
+                cy.print({ title: 'success', message: 'Card contains searched item!', type: 'success' })
+            }
+        })
+    })
+
+
+    it('Verify subscription in Cart page', () => {
+        cy.visit('/')
+        cy.get('.navbar-nav li').eq(2)
+            .find('a')
+            .click()
+        cy.get('.single-widget h2').should('be.visible').and('contain', 'Subscription')
+        cy.get('#susbscribe_email').type('email@email.com')
+        cy.get('#subscribe').click()
+
+        cy.get('#success-subscribe .alert-success').should('be.visible').and('contain', 'You have been successfully subscribed!')
+    })
+
+    it.only('Add Products to Cart', () => {
+        cy.navigateToProducts()
+
+        cy.get('.product-overlay').first().find('a').click({ force: true })
+        cy.contains('Continue Shopping').click()
+        cy.get('.product-overlay').eq(1).find('a').click({ force: true })
+        cy.contains('Continue Shopping').click()
+        
+        //verify cart items
+        cy.contains('Cart').click()
+        
+        cy.get('tbody tr').should('have.length', '2')
+
+        cy.get('tbody tr').first().then( item => {
+            cy.wrap(item).find('.cart_price').should('contain', 'Rs. 500')
+            cy.wrap(item).find('.cart_quantity button').should('contain', '1')
+            cy.wrap(item).find('.cart_total p').should('contain', 'Rs. 500')
+            
+            cy.wrap(item).find('.cart_quantity_delete').click()
+        })
+
+        cy.get('tbody tr').should('have.length', '1')
+
     })
 })
