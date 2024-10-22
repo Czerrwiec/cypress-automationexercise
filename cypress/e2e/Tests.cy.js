@@ -1,36 +1,21 @@
 /// <reference types = "cypress" />
 
+import { inputHandler } from "../support/page_objects/inputHandler"
+import { navigate } from "../support/page_objects/navigateTo"
+import { selectChecker } from "../support/page_objects/selectChecker"
+
+
 describe('e2e tests', () => {
 
-    const listOfSelect = ['[data-qa="days"]', '[data-qa="months"]', '[data-qa="years"]', '[data-qa="country"]']
+    beforeEach('open mainpage', () => {
+        cy.visit('/')
+    })
 
-    function checkSelect(select, option) {
-        cy.get(`${select} ${option}`).then( optionList => {
-   
-            for (let i = 1; i < optionList.length; i++) {
-                const item = optionList[i];
+	it.only('User registration and then delete account', () => {
+        navigate.toSignupUser()
 
-                if (select == '[data-qa="months"]' || select == '[data-qa="country"]') {
-                    cy.get(select)
-                    .select(item.label)
-                    .should('contain', item.label)
-                } else {
-                    cy.get(select)
-                    .select(item.value)
-                    .should('contain', item.value)
-                }
-                
-            }
-        })
-    }
-
-
-	it('User registration and then delete account', () => {
-		cy.visit('/');
-        cy.contains('Signup / Login').click()
-
-        cy.get('.signup-form h2').should('contain', 'New User Signup!')
-
+        inputHandler.checkLabelVisibilityAndContent({label:'.signup-form h2'})
+        
         cy.readJson('data.json').then((data) => {
             cy.get('.signup-form form').then( form => {
                 cy.wrap(form).find('[data-qa="signup-name"]').type(data.name)
@@ -39,9 +24,9 @@ describe('e2e tests', () => {
                 cy.wrap(form).find('button').click()
             })
         })
-        
 
-        cy.get('.login-form h2').should('be.visible').should('contain', 'Enter Account Information')
+        inputHandler.checkLabelVisibilityAndContent({label:'.text-center',index: 0})
+        inputHandler.checkLabelVisibilityAndContent({label:'.text-center',index: 1})
 
         cy.get('#id_gender2').check()
         cy.get('#id_gender2').invoke('prop', 'checked').should('eq', true)
@@ -56,90 +41,58 @@ describe('e2e tests', () => {
             cy.get('[data-qa="password"]').type(data.password).invoke('prop', 'value').should('eq', data.password)
         }))
 
-        cy.get(listOfSelect[0]).then( item => {
-            cy.wrap(item).find('option').first()
-                .should('contain', 'Day')
-                .invoke('prop', 'selected')
-                .should('eq', true)
 
-            cy.wrap(item).select('5').should('contain', "5")
-            cy.wrap(item).find('option').eq(5).invoke('prop', 'selected').should('eq', true)
-            cy.wrap(item).children().should('have.length', 32)
-        })
-        
-        cy.get(listOfSelect[1]).then( item => {
-            cy.wrap(item).find('option').first()
-                .should('contain', 'Month')
-                .invoke('prop', 'selected')
-                .should('eq', true)
+        //params (select, 'default picked option', value to pick)
 
-            cy.wrap(item).select('March').should('contain', "March")
-            cy.wrap(item).find('option').eq(3).invoke('prop', 'selected').should('eq', true)
-            cy.wrap(item).children().should('have.length', 13)
-        })
-
-        cy.get(listOfSelect[2]).then( item => {
-            cy.wrap(item).find('option').first()
-                .should('contain', 'Year')
-                .invoke('prop', 'selected')
-                .should('eq', true)
-
-            cy.wrap(item).select('1990').should('contain', "1990")
-            cy.wrap(item).find('option').eq(32).invoke('prop', 'selected').should('eq', true)
-            cy.wrap(item).children().should('have.length', 123)
-	    });   
-
-        // listOfSelect.forEach(item => {
-        //     checkSelect(item, 'option')
-        // });
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="days"]','Day','7')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="months"]','Month', 'June')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="years"]', 'Year', '1986')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="country"]', 'India', 'Israel')
+  
+        // selectChecker.checkSelectAllChoices('[data-qa="days"]', 'option')
+        // selectChecker.checkSelectAllChoices('[data-qa="months"]', 'option')
+        // selectChecker.checkSelectAllChoices('[data-qa="years"]', 'option')
+        // selectChecker.checkSelectAllChoices('[data-qa="country"]', 'option')
     
         cy.readJson('userRegistrationData.json').then((data) => {
-            
-            cy.get('[for="first_name"]').should('be.visible').and('contain', 'First name *')
-            cy.get('[data-qa="first_name"]').type(data.firstName)
-            cy.get('[data-qa="first_name"]').invoke('prop', 'value').should('eq', data.firstName)
+           
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="first_name"]'})    
+            inputHandler.fillAndCheck('[data-qa="first_name"]', data.firstName)
 
-            cy.get('[for="last_name"]').should('be.visible').and('contain', 'Last name *')
-            cy.get('[data-qa="last_name"]').type(data.lastName)
-            cy.get('[data-qa="last_name"]').invoke('prop', 'value').should('eq', data.lastName)
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="last_name"]'})    
+            inputHandler.fillAndCheck('[data-qa="last_name"]', data.lastName)
 
-            cy.get('[for="company"]').should('be.visible').and('contain', 'Company')
-            cy.get('[data-qa="company"]').type(data.company)
-            cy.get('[data-qa="company"]').invoke('prop', 'value').should('eq', data.company)
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="company"]'})    
+            inputHandler.fillAndCheck('[data-qa="company"]', data.company)
 
-            cy.get('[for="address1"]').should('be.visible').and('contain', 'Address *')
-            cy.get('[data-qa="address"]').type(data.address)
-            cy.get('[data-qa="address"]').invoke('prop', 'value').should('eq', data.address)
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="address1"]'})    
+            inputHandler.fillAndCheck('[data-qa="address"]', data.address)
 
-            cy.get('[for="address2"]').should('be.visible').and('contain', 'Address 2')
-            cy.get('[data-qa="address2"]').type(data.address2)
-            cy.get('[data-qa="address2"]').invoke('prop', 'value').should('eq', data.address2)
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="address2"]'})    
+            inputHandler.fillAndCheck('[data-qa="address2"]', data.address2)
 
-            cy.get('[for="state"]').should('be.visible').and('contain', 'State *')
-            cy.get('[data-qa="state"]').type(data.state)
-            cy.get('[data-qa="state"]').invoke('prop', 'value').should('eq', data.state)
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="state"]'})    
+            inputHandler.fillAndCheck('[data-qa="state"]', data.state)
 
-            cy.get('[for="city"]').eq(0).should('be.visible').and('contain', 'City *')
-            cy.get('[data-qa="city"]').type(data.city)
-            cy.get('[data-qa="city"]').invoke('prop', 'value').should('eq', data.city)
+            inputHandler.checkLabelVisibilityAndContent({label:'#city'})    
+            inputHandler.fillAndCheck('[data-qa="city"]', data.city)
 
-            cy.get('[for="city"]').eq(1).should('be.visible').and('contain', 'Zipcode *')
-            cy.get('[data-qa="zipcode"]').type(data.zipcode)
-            cy.get('[data-qa="zipcode"]').invoke('prop', 'value').should('eq', data.zipcode)
+            inputHandler.checkLabelVisibilityAndContent({label:'#zipcode'})    
+            inputHandler.fillAndCheck('[data-qa="zipcode"]', data.zipcode)
 
-            cy.get('[for="mobile_number"]').should('be.visible').and('contain', 'Mobile Number *')
-            cy.get('[data-qa="mobile_number"]').type(data.mobileNumber)
-            cy.get('[data-qa="mobile_number"]').invoke('prop', 'value').should('eq', data.mobileNumber)
-
+            inputHandler.checkLabelVisibilityAndContent({label:'[for="mobile_number"]'}) 
+            inputHandler.fillAndCheck('[data-qa="mobile_number"]', data.mobileNumber)
 
             cy.get('[data-qa="create-account"]').click()
-            cy.get('[data-qa="account-created"]').should('be.visible').and('contain', 'Account Created!')
-            cy.get('[data-qa="continue-button"]').click()
-            cy.get('.navbar-nav li').last().should('contain', `Logged in as ${data.username}`)
-            cy.contains('Delete Account').click()
-            cy.get('[data-qa="account-deleted"]').should('be.visible').and('contain', 'Account Deleted!')
+            inputHandler.checkLabelVisibilityAndContent({label:'[data-qa="account-created"]'})
+            
             cy.get('[data-qa="continue-button"]').click()
 
+            inputHandler.checkLabelVisibilityAndContent({label:'.navbar-nav li', value: `Logged in as ${data.username}`, index: 9})
+            cy.contains('Delete Account').click()
+
+            inputHandler.checkLabelVisibilityAndContent({label:'[data-qa="account-deleted"]'})
+            cy.get('[data-qa="continue-button"]').click()
         })       
     })
 
@@ -152,7 +105,6 @@ describe('e2e tests', () => {
 
     it('Login user with incorrect data', () => {
         cy.readJson('data.json').then((data) => {
-            cy.visit('/');
             cy.contains('Signup / Login').click()
             cy.get('.login-form h2').should('be.visible').and('contain','Login to your account')
             cy.get('[data-qa="login-email"]').type(data.email)
@@ -174,7 +126,6 @@ describe('e2e tests', () => {
     it('Register User with existing email', () => {
 
         cy.readJson('registratedUser.json').then((data) => {
-            cy.visit('/');
             cy.contains('Signup / Login').click()
             cy.get('[data-qa="signup-name"]').type(data.name)
             cy.get('[data-qa="signup-email"]').type(data.email)
@@ -191,7 +142,6 @@ describe('e2e tests', () => {
 
 
     it('Contact Us Form', () => {
-        cy.visit('/')
         cy.contains('Contact us').click()
         cy.get('.contact-form h2').should('be.visible').and('contain', 'Get In Touch')
 
@@ -210,8 +160,8 @@ describe('e2e tests', () => {
 
     it('Verify All Products and product detail page', () => {
 
-        cy.visit('/')
-        cy.contains('Products').click()
+        navigate.toProducts()
+
         cy.get('.features_items h2').should('contain', 'All Products')
         cy.get('.choose').first().find('a').click()
 
@@ -230,9 +180,8 @@ describe('e2e tests', () => {
     it('Search for products', () => {
 
         const item = 'jeans'
-        
-        cy.visit('/')
-        cy.contains('Products').click()
+    
+        navigate.toProducts()
         cy.get('#search_product').type(item)
         cy.get('#submit_search').click()
 
@@ -249,7 +198,7 @@ describe('e2e tests', () => {
 
 
     it('Verify subscription in Cart page', () => {
-        cy.visit('/')
+
         cy.get('.navbar-nav li').eq(2)
             .find('a')
             .click()
@@ -260,8 +209,9 @@ describe('e2e tests', () => {
         cy.get('#success-subscribe .alert-success').should('be.visible').and('contain', 'You have been successfully subscribed!')
     })
 
-    it.only('Add Products to Cart', () => {
-        cy.navigateToProducts()
+
+    it('Add Products to Cart', () => {
+        navigate.toProducts()
 
         cy.get('.product-overlay').first().find('a').click({ force: true })
         cy.contains('Continue Shopping').click()

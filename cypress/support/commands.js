@@ -31,18 +31,11 @@ Cypress.Commands.add('readJson', (filePath) => {
 
 Cypress.Commands.add('userLogIn', (file) => {
 
-    cy.readJson(file).then((data) => {
-        cy.visit('/');
+    cy.readJson(file).then((data) => {;
         cy.contains('Signup / Login').click()
         cy.get('[data-qa="login-email"]').type(data.email)
         cy.get('[data-qa="login-password"]').type(data.password)
         cy.get('[data-qa="login-button"]').click()
         cy.get('.navbar-nav li').eq(3).should('contain', 'Logout')
     })
-})
-
-
-Cypress.Commands.add('navigateToProducts', () => {
-    cy.visit('/')
-    cy.contains('Products').click()
 })
