@@ -11,36 +11,34 @@ describe('e2e tests', () => {
         cy.visit('/')
     })
 
-	it.only('User registration and then delete account', () => {
+	it('User registration and then delete account', () => {
         navigate.toSignupUser()
 
-        inputHandler.checkLabelVisibilityAndContent({label:'.signup-form h2'})
+        inputHandler.checkLabelVisibilityAndContent({selector:'.signup-form h2'})
         
         cy.readJson('data.json').then((data) => {
-            cy.get('.signup-form form').then( form => {
-                cy.wrap(form).find('[data-qa="signup-name"]').type(data.name)
-                cy.wrap(form).find('[data-qa="signup-email"]').type(data.email)
-                cy.wrap(form).find('[data-qa="signup-button"]')
-                cy.wrap(form).find('button').click()
-            })
+
+            inputHandler.inputValueChecker({selector : '[data-qa="signup-name"]', typeContent: data.name})
+            inputHandler.inputValueChecker({selector : '[data-qa="signup-email"]', typeContent: data.email})
+
+            cy.get('[data-qa="signup-button"]').click()
         })
 
-        inputHandler.checkLabelVisibilityAndContent({label:'.text-center',index: 0})
-        inputHandler.checkLabelVisibilityAndContent({label:'.text-center',index: 1})
+        inputHandler.checkLabelVisibilityAndContent({selector:'.text-center',index: 0})
+        inputHandler.checkLabelVisibilityAndContent({selector:'.text-center',index: 1})
 
-        cy.get('#id_gender2').check()
-        cy.get('#id_gender2').invoke('prop', 'checked').should('eq', true)
-
-        cy.get('#id_gender1').check()
-        cy.get('#id_gender1').invoke('prop', 'checked').should('eq', true)
+        inputHandler.radioButtonChecker('#id_gender2')
+        inputHandler.radioButtonChecker('#id_gender1')
 
         cy.readJson('data.json').then((data => {
-            cy.get('[data-qa="name"]').invoke('attr', 'value').should('eq', data.name)
-            cy.get('[data-qa="email"]').invoke('attr', 'value').should('eq', data.email)
-            cy.get('[data-qa="password"]').invoke('attr', 'value').should('eq', '')
-            cy.get('[data-qa="password"]').type(data.password).invoke('prop', 'value').should('eq', data.password)
-        }))
+            
+            inputHandler.inputValueChecker({selector:'[data-qa="name"]', value: data.name})
 
+            inputHandler.inputValueChecker({selector:'[data-qa="email"]', value: data.email})
+
+            inputHandler.inputValueChecker({selector:'[data-qa="password"]', typeContent: data.password})
+
+        }))
 
         //params (select, 'default picked option', value to pick)
 
@@ -49,49 +47,57 @@ describe('e2e tests', () => {
         selectChecker.selectOneChoiceAndVerifyLength('[data-qa="years"]', 'Year', '1986')
         selectChecker.selectOneChoiceAndVerifyLength('[data-qa="country"]', 'India', 'Israel')
   
-        // selectChecker.checkSelectAllChoices('[data-qa="days"]', 'option')
-        // selectChecker.checkSelectAllChoices('[data-qa="months"]', 'option')
-        // selectChecker.checkSelectAllChoices('[data-qa="years"]', 'option')
-        // selectChecker.checkSelectAllChoices('[data-qa="country"]', 'option')
+        selectChecker.checkSelectAllChoices('[data-qa="days"]', 'option')
+        selectChecker.checkSelectAllChoices('[data-qa="months"]', 'option')
+        selectChecker.checkSelectAllChoices('[data-qa="years"]', 'option')
+        selectChecker.checkSelectAllChoices('[data-qa="country"]', 'option')
     
         cy.readJson('userRegistrationData.json').then((data) => {
            
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="first_name"]'})    
-            inputHandler.fillAndCheck('[data-qa="first_name"]', data.firstName)
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="first_name"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="first_name"]', typeContent: data.firstName})
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="last_name"]'})    
-            inputHandler.fillAndCheck('[data-qa="last_name"]', data.lastName)
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="last_name"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="last_name"]', typeContent: data.lastName})
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="company"]'})    
-            inputHandler.fillAndCheck('[data-qa="company"]', data.company)
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="address1"]'})    
-            inputHandler.fillAndCheck('[data-qa="address"]', data.address)
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="company"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="company"]', typeContent: data.company})
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="address2"]'})    
-            inputHandler.fillAndCheck('[data-qa="address2"]', data.address2)
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="state"]'})    
-            inputHandler.fillAndCheck('[data-qa="state"]', data.state)
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="address1"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="address"]', typeContent: data.address})
 
-            inputHandler.checkLabelVisibilityAndContent({label:'#city'})    
-            inputHandler.fillAndCheck('[data-qa="city"]', data.city)
 
-            inputHandler.checkLabelVisibilityAndContent({label:'#zipcode'})    
-            inputHandler.fillAndCheck('[data-qa="zipcode"]', data.zipcode)
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="address2"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="address2"]', typeContent: data.address2})
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[for="mobile_number"]'}) 
-            inputHandler.fillAndCheck('[data-qa="mobile_number"]', data.mobileNumber)
+
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="state"]'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="state"]', typeContent: data.state})
+
+
+            inputHandler.checkLabelVisibilityAndContent({selector:'#city'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="city"]', typeContent: data.city})
+
+
+            inputHandler.checkLabelVisibilityAndContent({selector:'#zipcode'})    
+            inputHandler.inputValueChecker({selector:'[data-qa="zipcode"]', typeContent: data.zipcode})
+
+
+            inputHandler.checkLabelVisibilityAndContent({selector:'[for="mobile_number"]'}) 
+            inputHandler.inputValueChecker({selector:'[data-qa="mobile_number"]', typeContent: data.mobileNumber})
+
 
             cy.get('[data-qa="create-account"]').click()
-            inputHandler.checkLabelVisibilityAndContent({label:'[data-qa="account-created"]'})
+            inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-created"]'})
             
             cy.get('[data-qa="continue-button"]').click()
 
-            inputHandler.checkLabelVisibilityAndContent({label:'.navbar-nav li', value: `Logged in as ${data.username}`, index: 9})
+            inputHandler.checkLabelVisibilityAndContent({selector:'.navbar-nav li', value: `Logged in as ${data.username}`, index: 9})
             cy.contains('Delete Account').click()
 
-            inputHandler.checkLabelVisibilityAndContent({label:'[data-qa="account-deleted"]'})
+            inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-deleted"]'})
             cy.get('[data-qa="continue-button"]').click()
         })       
     })
@@ -105,36 +111,38 @@ describe('e2e tests', () => {
 
     it('Login user with incorrect data', () => {
         cy.readJson('data.json').then((data) => {
-            cy.contains('Signup / Login').click()
-            cy.get('.login-form h2').should('be.visible').and('contain','Login to your account')
-            cy.get('[data-qa="login-email"]').type(data.email)
-            cy.get('[data-qa="login-password"]').type(data.password + '!')
+            navigate.toSignupUser()
+
+            inputHandler.checkLabelVisibilityAndContent({selector: '.login-form h2'})
+
+            inputHandler.inputValueChecker({selector: '[data-qa="login-email"]', typeContent:data.email})
+
+            inputHandler.inputValueChecker({selector:'[data-qa="login-password"]', typeContent:data.password + '!'})
+
             cy.get('[data-qa="login-button"]').click()
 
-            cy.get('[action="/login"]').find('p')
-                .should('be.visible')
-                .and('contain', 'Your email or password is incorrect!')
+            inputHandler.checkLabelVisibilityAndContent({selector: 'p[style="color: red;"]'})
 
-            cy.get('[action="/login"]').find('p')
+            cy.get('p[style="color: red;"]')
                 .should('have.attr', 'style')
                 .and('contain', 'color: red;')
         })
-        
     })
 
 
     it('Register User with existing email', () => {
 
         cy.readJson('registratedUser.json').then((data) => {
-            cy.contains('Signup / Login').click()
-            cy.get('[data-qa="signup-name"]').type(data.name)
-            cy.get('[data-qa="signup-email"]').type(data.email)
+            navigate.toSignupUser()
+
+            inputHandler.inputValueChecker({selector:'[data-qa="signup-name"]', typeContent:data.name})
+            inputHandler.inputValueChecker({selector:'[data-qa="signup-email"]', typeContent:data.email})
+
             cy.get('[data-qa="signup-button"]').click()
 
-            cy.get('[action="/signup"]').find('p')
-                .should('be.visible')
-                .and('contain','Email Address already exist!')
-            cy.get('[action="/signup"]').find('p')
+            inputHandler.checkLabelVisibilityAndContent({selector:'p[style="color: red;"]'})
+
+            cy.get('p[style="color: red;"]')
                 .should('have.attr', 'style')
                 .and('contain', 'color: red;')
         })

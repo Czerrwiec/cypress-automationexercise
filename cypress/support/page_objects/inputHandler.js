@@ -1,32 +1,45 @@
 export class InputHandler {
 
-    fillAndCheck(input, value) {
-        cy.get(input).type(value)
-        cy.get(input).invoke('prop', 'value').should('eq', value)
-    }
+    checkLabelVisibilityAndContent({selector, value, index}){
 
-    // checkLabelVisibilityAndContent(label, value='', index='') {
-    checkLabelVisibilityAndContent({label, value, index}){
-
-            console.log(label);
-            console.log(value);
-            console.log(index);
-
-            cy.get(label).then( item => {
+               cy.get(selector).then( item => {
 
                 if (value === undefined && index === undefined) {
                     cy.wrap(item).should('be.visible').and('contain', item.text())
                 } else if (value === undefined && index !== undefined) {
-                    cy.wrap(item).eq(index).then( label => {
-                        cy.wrap(label).should('be.visible').and('contain', label.text())
+                    cy.wrap(item).eq(index).then( selector => {
+                        cy.wrap(selector).should('be.visible').and('contain', selector.text())
                     })
                 } else if (value !== undefined && index !== undefined) {
-                    cy.wrap(item).eq(index).then( label => {
-                        cy.wrap(label).should('be.visible').and('contain', value)
+                    cy.wrap(item).eq(index).then( selector => {
+                        cy.wrap(selector).should('be.visible').and('contain', value)
                     })
                 }       
             })      
     }
+
+    radioButtonChecker(selector) {
+
+        cy.get(selector).then( item => {
+            cy.wrap(item)
+                .invoke('prop', 'checked')
+                .should('eq', false)
+            cy.wrap(item)
+                .check()
+                .invoke('prop', 'checked')
+                .should('eq', true)
+        } ) 
+    }
+
+    inputValueChecker({selector, value, typeContent}) {
+        
+        if (value !== undefined) {
+            cy.get(selector).invoke('prop', 'value').should('eq', value)
+        } else {
+            cy.get(selector).type(typeContent).invoke('prop', 'value').should('eq',typeContent)
+        }       
+    }
+
 }
 
 export const inputHandler = new InputHandler()
