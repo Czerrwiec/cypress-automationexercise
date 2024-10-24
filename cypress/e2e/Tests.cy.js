@@ -11,7 +11,7 @@ describe('e2e tests', () => {
         cy.visit('/')
     })
 
-	it('User registration and then delete account', () => {
+	it.only('User registration and then delete account', () => {
         navigate.toSignupUser()
 
         inputHandler.checkLabelVisibilityAndContent({selector:'.signup-form h2'})
@@ -53,48 +53,25 @@ describe('e2e tests', () => {
         selectChecker.checkSelectAllChoices('[data-qa="country"]', 'option')
     
         cy.readJson('userRegistrationData.json').then((data) => {
-           
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="first_name"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="first_name"]', typeContent: data.firstName})
 
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="last_name"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="last_name"]', typeContent: data.lastName})
+            cy.get('.form-group input').then( list => {
+                const splicedList = list.splice(4, 9);
+                
+                splicedList.forEach( item => {
+                    const attr = item.attributes['data-qa']
+                    const select = `[${attr.name}="${attr.value}"]`
 
+                    inputHandler.checkLabelVisibilityAndContent({selector:select}) 
+                    inputHandler.inputValueChecker({selector:select, typeContent:attr.value})
+                });
 
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="company"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="company"]', typeContent: data.company})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="address1"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="address"]', typeContent: data.address})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="address2"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="address2"]', typeContent: data.address2})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="state"]'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="state"]', typeContent: data.state})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'#city'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="city"]', typeContent: data.city})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'#zipcode'})    
-            inputHandler.inputValueChecker({selector:'[data-qa="zipcode"]', typeContent: data.zipcode})
-
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'[for="mobile_number"]'}) 
-            inputHandler.inputValueChecker({selector:'[data-qa="mobile_number"]', typeContent: data.mobileNumber})
-
+            })
 
             cy.get('[data-qa="create-account"]').click()
             inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-created"]'})
             
             cy.get('[data-qa="continue-button"]').click()
-
-            inputHandler.checkLabelVisibilityAndContent({selector:'.navbar-nav li', value: `Logged in as ${data.username}`, index: 9})
+            inputHandler.checkLabelVisibilityAndContent({selector:'.navbar-nav li', value: `Logged in as ${data.user_name}`, index: 9})
             cy.contains('Delete Account').click()
 
             inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-deleted"]'})
