@@ -1,22 +1,33 @@
 export class InputHandler {
 
-    checkLabelVisibilityAndContent({selector, value, index}){
+    checkLabelVisibilityAndContent({selector, value, index, object}){
 
-               cy.get(selector).then( item => {
+            if (selector !== undefined && object === undefined) {
+                cy.get(selector).then( item => {
 
+                    if (value === undefined && index === undefined) {
+                        cy.wrap(item).should('be.visible').and('contain', item.text())
+                    } else if (value === undefined && index !== undefined) {
+                        cy.wrap(item).eq(index).then( selector => {
+                            cy.wrap(selector).should('be.visible').and('contain', selector.text())
+                        })
+                    } else if (value !== undefined && index !== undefined) {
+                        cy.wrap(item).eq(index).then( selector => {
+                            cy.wrap(selector).should('be.visible').and('contain', value)
+                        })
+                    }      
+                })
+            } else {
                 if (value === undefined && index === undefined) {
-                    cy.wrap(item).should('be.visible').and('contain', item.text())
-                } else if (value === undefined && index !== undefined) {
-                    cy.wrap(item).eq(index).then( selector => {
-                        cy.wrap(selector).should('be.visible').and('contain', selector.text())
-                    })
-                } else if (value !== undefined && index !== undefined) {
-                    cy.wrap(item).eq(index).then( selector => {
-                        cy.wrap(selector).should('be.visible').and('contain', value)
-                    })
-                }       
-            })      
-    }
+                    cy.wrap(object).should('be.visible').and('contain', object.text())
+                    
+                } else if (value !== undefined && index === undefined) {
+                    cy.wrap(object).should('be.visible').and('contain', value)
+                    }
+            }      
+        }   
+            
+    
 
     radioButtonChecker(selector) {
 

@@ -11,15 +11,15 @@ describe('e2e tests', () => {
         cy.visit('/')
     })
 
-	it.only('User registration and then delete account', () => {
+	it('User registration and then delete account', () => {
         navigate.toSignupUser()
 
         inputHandler.checkLabelVisibilityAndContent({selector:'.signup-form h2'})
         
         cy.readJson('data.json').then((data) => {
 
-            inputHandler.inputValueChecker({selector : '[data-qa="signup-name"]', typeContent: data.name})
-            inputHandler.inputValueChecker({selector : '[data-qa="signup-email"]', typeContent: data.email})
+            inputHandler.inputValueChecker({selector :'[data-qa="signup-name"]', typeContent:data.name})
+            inputHandler.inputValueChecker({selector :'[data-qa="signup-email"]', typeContent:data.email})
 
             cy.get('[data-qa="signup-button"]').click()
         })
@@ -33,9 +33,7 @@ describe('e2e tests', () => {
         cy.readJson('data.json').then((data => {
             
             inputHandler.inputValueChecker({selector:'[data-qa="name"]', value: data.name})
-
             inputHandler.inputValueChecker({selector:'[data-qa="email"]', value: data.email})
-
             inputHandler.inputValueChecker({selector:'[data-qa="password"]', typeContent: data.password})
 
         }))
@@ -53,16 +51,17 @@ describe('e2e tests', () => {
         selectChecker.checkSelectAllChoices('[data-qa="country"]', 'option')
     
         cy.readJson('userRegistrationData.json').then((data) => {
+            const listFromData = Object.values(data)
 
             cy.get('.form-group input').then( list => {
                 const splicedList = list.splice(4, 9);
                 
-                splicedList.forEach( item => {
+                splicedList.forEach( (item, index) => {
                     const attr = item.attributes['data-qa']
                     const select = `[${attr.name}="${attr.value}"]`
 
                     inputHandler.checkLabelVisibilityAndContent({selector:select}) 
-                    inputHandler.inputValueChecker({selector:select, typeContent:attr.value})
+                    inputHandler.inputValueChecker({selector:select, typeContent:listFromData[index]})
                 });
 
             })
@@ -71,6 +70,7 @@ describe('e2e tests', () => {
             inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-created"]'})
             
             cy.get('[data-qa="continue-button"]').click()
+
             inputHandler.checkLabelVisibilityAndContent({selector:'.navbar-nav li', value: `Logged in as ${data.user_name}`, index: 9})
             cy.contains('Delete Account').click()
 
@@ -128,15 +128,19 @@ describe('e2e tests', () => {
 
     it('Contact Us Form', () => {
         cy.contains('Contact us').click()
-        cy.get('.contact-form h2').should('be.visible').and('contain', 'Get In Touch')
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.contact-form h2'})
 
         cy.readJson('registratedUser').then(data => {
 
-            cy.get('[data-qa="name"]').type(data.name)
-            cy.get('[data-qa="email"]').type(data.email)
-            cy.get('[data-qa="subject"]').type('This is the subject')
-            cy.get('[data-qa="message"]').type('This is a message body')
+            inputHandler.inputValueChecker({selector:'[data-qa="name"]', typeContent:data.name}) 
+            inputHandler.inputValueChecker({selector:'[data-qa="email"]', typeContent:data.email})
+            
+            inputHandler.inputValueChecker({selector:'[data-qa="subject"]', typeContent:'This is the subject'})
+            inputHandler.inputValueChecker({selector:'[data-qa="message"]', typeContent:'This is a message body'})
+
             cy.get('[data-qa="submit-button"]').click()
+
             cy.get('.contact-form .alert-success').should('be.visible').and('contain', 'Success! Your details have been submitted successfully.')
         })
         
@@ -147,7 +151,8 @@ describe('e2e tests', () => {
 
         navigate.toProducts()
 
-        cy.get('.features_items h2').should('contain', 'All Products')
+        inputHandler.checkLabelVisibilityAndContent({selector: '.features_items h2', value: 'All Products', index: 0})
+
         cy.get('.choose').first().find('a').click()
 
         //details page
@@ -163,18 +168,19 @@ describe('e2e tests', () => {
 
 
     it('Search for products', () => {
+        const itemToSearch = 'jeans'
 
-        const item = 'jeans'
-    
         navigate.toProducts()
-        cy.get('#search_product').type(item)
+
+        inputHandler.inputValueChecker({selector: '#search_product', typeContent:itemToSearch})
+
         cy.get('#submit_search').click()
 
         cy.get('.productinfo p').each( element => {
 
             const lowerCaseItem = element[0].innerText.toLowerCase()
 
-            if (lowerCaseItem.includes('jeans')) {
+            if (lowerCaseItem.includes(itemToSearch)) {
                 // customized method below for color the output
                 cy.print({ title: 'success', message: 'Card contains searched item!', type: 'success' })
             }
@@ -187,11 +193,13 @@ describe('e2e tests', () => {
         cy.get('.navbar-nav li').eq(2)
             .find('a')
             .click()
-        cy.get('.single-widget h2').should('be.visible').and('contain', 'Subscription')
-        cy.get('#susbscribe_email').type('email@email.com')
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.single-widget h2'})
+        inputHandler.inputValueChecker({selector:'#susbscribe_email', typeContent:'email@email.com'})
+
         cy.get('#subscribe').click()
 
-        cy.get('#success-subscribe .alert-success').should('be.visible').and('contain', 'You have been successfully subscribed!')
+        inputHandler.checkLabelVisibilityAndContent({selector: '#success-subscribe .alert-success'})
     })
 
 
@@ -219,4 +227,129 @@ describe('e2e tests', () => {
         cy.get('tbody tr').should('have.length', '1')
 
     })
+
+
+    it('Verify Product quantity in Cart', () => {
+
+        const product = '2'
+        const quantity = '-3'
+
+        cy.get(`[href="/product_details/${product}"]`).click()
+        cy.get('#quantity').clear().type(quantity)
+        cy.get('button.cart').click()
+        cy.get('.modal-body').find('a').click()
+
+
+        cy.get('.cart_quantity button').then( button => {
+            
+            const value = button[0].textContent
+
+            if (value.startsWith('-') === true || value === '0') {
+                cy.print({ title: 'error', message: 'Input contains 0 or negative number', type: 'error' })
+            } else {
+                cy.wrap(button).should('contain', quantity)
+            }
+        })
+
+    })
+
+
+    it('Place Order: Register while Checkout', () => {
+
+        const product = '3'
+        const quantity = '1'
+
+        cy.get(`[href="/product_details/${product}"]`).click()
+
+        cy.get('.product-information h2').then((el) => cy.wrap(el.text()).as('element'))
+
+        cy.get('#quantity').clear().type(quantity)
+        cy.get('button.cart').click()  
+        
+        cy.contains('Continue Shopping').click()
+        cy.get('.navbar-nav [href="/view_cart"]').click()
+        cy.url().should('include', '/view_cart')
+        cy.contains('Proceed To Checkout').click()
+        cy.get('.modal-body a').click()
+
+        cy.readJson('data.json').then((data) => {
+
+            inputHandler.inputValueChecker({selector :'[data-qa="signup-name"]', typeContent:data.name})
+            inputHandler.inputValueChecker({selector :'[data-qa="signup-email"]', typeContent:data.email})
+
+            cy.get('[data-qa="signup-button"]').click()
+        })
+
+        cy.get('#id_gender1').check()
+
+        cy.readJson('data.json').then((data => {
+            
+            inputHandler.inputValueChecker({selector:'[data-qa="name"]', value: data.name})
+            inputHandler.inputValueChecker({selector:'[data-qa="email"]', value: data.email})
+            inputHandler.inputValueChecker({selector:'[data-qa="password"]', typeContent: data.password})
+
+        }))
+
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="days"]','Day','7')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="months"]','Month', 'June')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="years"]', 'Year', '1986')
+        selectChecker.selectOneChoiceAndVerifyLength('[data-qa="country"]', 'India', 'Israel')
+
+        cy.readJson('userRegistrationData.json').then((data) => {
+            const listFromData = Object.values(data)
+            
+            cy.get('.form-group input').then( list => {
+                const splicedList = list.splice(4, 9);
+                
+                splicedList.forEach( (item, index) => {
+                    const attr = item.attributes['data-qa']
+                    const select = `[${attr.name}="${attr.value}"]`
+
+                    inputHandler.checkLabelVisibilityAndContent({selector:select}) 
+                    inputHandler.inputValueChecker({selector:select, typeContent:listFromData[index]})
+                });
+
+            })
+
+            cy.get('[data-qa="create-account"]').click()
+            inputHandler.checkLabelVisibilityAndContent({selector:'[data-qa="account-created"]'})
+            
+            cy.get('[data-qa="continue-button"]').click()
+
+            inputHandler.checkLabelVisibilityAndContent({selector:'.navbar-nav li', value: `Logged in as ${data.user_name}`, index: 9})
+        })
+        
+        cy.get('.navbar-nav [href="/view_cart"]').click()
+        cy.contains('Proceed To Checkout').click()
+
+        cy.url().should('include', '/checkout')
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.page-subheading', index:0})
+
+        cy.get('#address_delivery li').each( el => {
+            cy.wrap(el).should('be.visible').and('not.eq', ' ')
+        })
+
+        cy.get('.cart_description a').then( item => {
+            cy.get('@element').should('contain', item.text())
+        })
+        
+        cy.get('.cart_quantity button').should('contain', quantity)
+        cy.get('textarea').type('This is a message')
+        cy.contains('Place Order').click()
+
+        inputHandler.inputValueChecker({selector:'[data-qa="name-on-card"]', typeContent:"Tomasz Czerwiec"})
+        inputHandler.inputValueChecker({selector:'[data-qa="card-number"]', typeContent:"999999999"}) 
+        inputHandler.inputValueChecker({selector:'[data-qa="cvc"]', typeContent:"331"})
+        inputHandler.inputValueChecker({selector:'[data-qa="expiry-month"]', typeContent:"02"})
+        inputHandler.inputValueChecker({selector:'[data-qa="expiry-year"]', typeContent:"2026"})
+
+        cy.get('[data-qa="pay-button"]').click()
+
+        cy.url().should('include', 'payment_done/1000')
+
+        cy.contains('Delete Account').click()
+        
+    })
 })
+
