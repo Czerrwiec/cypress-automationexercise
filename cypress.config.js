@@ -2,7 +2,9 @@ const { defineConfig } = require("cypress");
 
 module.exports = defineConfig({
   e2e: {
-
+    env: {
+      apiUrl:'https://automationexercise.com/api'
+    },
     baseUrl: "https://automationexercise.com/",
     viewportHeight: 1080,
     viewportWidth: 1920,

@@ -15,7 +15,11 @@ export class InputHandler {
                         cy.wrap(item).eq(index).then( selector => {
                             cy.wrap(selector).should('be.visible').and('contain', value)
                         })
-                    }      
+                    } else if (value !== undefined && index === undefined) {
+                        cy.wrap(item).then( selector => {
+                            cy.wrap(selector).should('be.visible').and('contain', value)
+                        })
+                    } 
                 })
             } else {
                 if (value === undefined && index === undefined) {

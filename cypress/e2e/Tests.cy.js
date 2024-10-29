@@ -351,5 +351,101 @@ describe('e2e tests', () => {
         cy.contains('Delete Account').click()
         
     })
+
+
+    it('Remove products from cart', () => {
+
+        cy.get('.overlay-content').eq(0).find('a').click({ force: true })
+        cy.contains('Continue Shopping').click()
+        cy.get('.overlay-content').eq(1).find('a').click({ force: true })
+        cy.get('[href="/view_cart"]').eq(1).click()
+
+        cy.get('tbody tr').eq(0).then( product => {
+            cy.wrap(product).invoke('attr', 'id').as('p_Id')
+            cy.wrap(product).find('.cart_quantity_delete').click()
+        });
+
+        cy.wait(500)
+
+        cy.get('tbody tr').each(product => {
+            cy.get('@p_Id').then( deleted_product => {
+                cy.wrap(product).invoke('attr', 'id').should('not.contain', deleted_product)
+            });
+        })
+
+    })
+
+
+    it('View Category Products', () => {
+        navigate.toProducts()
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.panel-title', index:0})
+
+        cy.get('a[href="#Women"]').click()
+        cy.get('a[href="/category_products/1"]').click()
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.features_items h2', index:0})
+
+        cy.get('a[href="#Men"]').click()
+        cy.get('a[href="/category_products/3"]').click()
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.features_items h2', index:0})
+    })
+
+
+    it('View & Cart Brand Products', () => {
+        navigate.toProducts()
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.brands_products h2', index:0})
+
+        cy.get('a[href="/brand_products/H&M"]').click()
+        cy.url().should('include', 'brand_products/H&M')
+
+        cy.get('a[href="/brand_products/Biba"]').click()
+        cy.url().should('include', 'brand_products/Biba')
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'.features_items h2', index:0})
+
+        cy.get('.single-products').each( product => {
+            cy.wrap(product).should('be.visible')
+        })
+    })
+
+
+    it('Search Products and Verify Cart After Login', () => {
+
+        navigate.toProducts()
+        cy.url().should('include', 'products')
+
+        const searched_product = 'White'
+
+        inputHandler.inputValueChecker({selector:'#search_product', typeContent:searched_product})
+
+        cy.get('#submit_search').click()
+        cy.wait(500)
+
+        cy.get('.features_items .single-products').each( item => {
+            cy.wrap(item).find('.productinfo p').should('contain', searched_product)
+        })
+    })
+
+    it('Add review', () => {
+        navigate.toProducts()
+
+        cy.get('a[href="/product_details/1"]').click()
+
+        inputHandler.checkLabelVisibilityAndContent({selector:'a[href="#reviews"]'})
+
+        cy.readJson('registratedUser.json').then(data => {
+            inputHandler.inputValueChecker({selector:'#name', typeContent:data.name})
+            inputHandler.inputValueChecker({selector:'#email', typeContent:data.email})
+            inputHandler.inputValueChecker({selector:'#review', typeContent:'this is my new review!'})
+
+            cy.get('#button-review').click()
+            
+            inputHandler.checkLabelVisibilityAndContent({selector:'.alert-success span', value:'Thank you for your review.'})
+
+        })
+    })
 })
 
